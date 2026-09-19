@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Risk Analyzer</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&display=swap"
-        rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -27,17 +21,15 @@
         }
 
         .container {
-            width: min(900px, 92%);
+            width: min(980px, 92%);
             margin: 0 auto;
-            padding: 70px 0;
+            padding: 58px 0 70px;
         }
 
-        header {
-            margin-bottom: 40px;
-        }
+        header { margin-bottom: 32px; }
 
         h1 {
-            margin: 0 0 8px;
+            margin: 0 0 7px;
             font-size: 28px;
             font-weight: 600;
             letter-spacing: -0.5px;
@@ -53,18 +45,18 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
 
         .card {
             background: #111417;
             border: 1px solid #24282c;
             border-radius: 10px;
-            padding: 20px;
+            padding: 19px;
         }
 
         .card h2 {
-            margin: 0 0 16px;
+            margin: 0 0 15px;
             font-size: 15px;
             font-weight: 500;
         }
@@ -84,23 +76,14 @@
             outline: none;
             background: #0c0f11;
             color: #e7e9ea;
-            font-family: "Noto Sans", sans-serif;
+            font-family: inherit;
             font-size: 13px;
-            transition: border-color 0.15s;
         }
 
-        input:focus {
-            border-color: #666d74;
-        }
-
-        input::placeholder {
-            color: #555b61;
-        }
+        input:focus { border-color: #666d74; }
+        input::placeholder { color: #555b61; }
 
         button {
-            width: 100%;
-            margin-top: 12px;
-            padding: 10px 14px;
             border: 1px solid #343a40;
             border-radius: 7px;
             background: #e7e9ea;
@@ -109,26 +92,54 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.15s;
         }
 
-        button:hover {
-            opacity: 0.85;
+        .submit-button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px 14px;
         }
 
-        button:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
+        button:hover { opacity: 0.85; }
+        button:disabled { opacity: 0.45; cursor: not-allowed; }
 
-        .response-card {
+        .results-card,
+        .transactions-card {
             background: #111417;
             border: 1px solid #24282c;
             border-radius: 10px;
             overflow: hidden;
+            margin-bottom: 18px;
         }
 
-        .response-header {
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #24282c;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 13px 16px;
+            border: 0;
+            border-radius: 0;
+            background: transparent;
+            color: #777e85;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: #e7e9ea;
+            border-bottom-color: #e7e9ea;
+        }
+
+        .tab:hover { opacity: 1; background: #15191c; }
+
+        .result-panel { display: none; }
+        .result-panel.active { display: block; }
+
+        .panel-header,
+        .transactions-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -136,7 +147,7 @@
             border-bottom: 1px solid #24282c;
         }
 
-        .response-title {
+        .panel-title {
             font-size: 13px;
             font-weight: 500;
         }
@@ -146,34 +157,204 @@
             font-size: 11px;
         }
 
-        pre {
-            height: 360px;
+        .table-wrap {
+            max-height: 390px;
+            overflow: auto;
+        }
+
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .param-table th,
+        .param-table td {
+            padding: 11px 18px;
+            border-bottom: 1px solid #1f2327;
+            text-align: left;
+            vertical-align: top;
+            font-size: 12px;
+        }
+
+        .param-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: #0e1113;
+            color: #7f868d;
+            font-weight: 500;
+        }
+
+        .param-table th:first-child,
+        .param-table td:first-child {
+            width: 34%;
+        }
+
+        .param-name {
+            color: #aeb4ba;
+            font-family: "Noto Sans", monospace;
+            word-break: break-word;
+        }
+
+        .param-value {
+            color: #d9dde0;
+            font-family: "Noto Sans", monospace;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .empty {
+            padding: 38px 20px;
+            color: #6f767d;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .raw-json {
+            height: 260px;
             margin: 0;
-            padding: 18px;
+            padding: 17px 18px;
             overflow: auto;
             background: #0c0f11;
             color: #b9c0c7;
             font-family: "Noto Sans", monospace;
-            font-size: 12px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.55;
             white-space: pre-wrap;
             word-break: break-word;
         }
 
+        .transactions-header {
+            border-bottom: 0;
+        }
+
+        .transaction-title {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .transaction-page {
+            color: #737a81;
+            font-size: 11px;
+        }
+
+        .transaction {
+            margin: 0 18px 10px;
+            padding: 14px;
+            background: #0c0f11;
+            border: 1px solid #20252a;
+            border-radius: 8px;
+        }
+
+        .transaction:last-child { margin-bottom: 16px; }
+
+        .transaction-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 11px;
+        }
+
+        .transaction-number {
+            color: #e2e5e7;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .transaction-type {
+            color: #777e85;
+            font-size: 11px;
+        }
+
+        .transaction-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+        }
+
+        .transaction-field {
+            min-width: 0;
+        }
+
+        .transaction-label {
+            display: block;
+            margin-bottom: 3px;
+            color: #666e75;
+            font-size: 10px;
+        }
+
+        .transaction-value {
+            display: block;
+            color: #bfc5ca;
+            font-family: "Noto Sans", monospace;
+            font-size: 11px;
+            word-break: break-word;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 7px;
+            padding: 4px 18px 17px;
+        }
+
+        .arrow {
+            width: 31px;
+            height: 31px;
+            margin: 0;
+            padding: 0;
+            background: #15191c;
+            color: #d9dde0;
+            border: 1px solid #2c3237;
+            font-size: 17px;
+            line-height: 1;
+        }
+
+        .arrow:disabled {
+            color: #4c5359;
+            background: #101315;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+        }
+
+        .small-button {
+            margin: 0;
+            padding: 5px 9px;
+            background: #15191c;
+            color: #9ca3a9;
+            border-color: #2b3035;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .small-button.active {
+            color: #e7e9ea;
+            background: #1b2024;
+        }
+
         @media (max-width: 700px) {
-            .forms {
-                grid-template-columns: 1fr;
-            }
+            .forms { grid-template-columns: 1fr; }
 
             .container {
+                width: min(94%, 980px);
                 padding: 40px 0;
             }
+
+            .transaction-grid { grid-template-columns: 1fr; }
+
+            .param-table th:first-child,
+            .param-table td:first-child { width: 42%; }
         }
     </style>
 </head>
 
 <body>
-
 <div class="container">
 
     <header>
@@ -182,136 +363,451 @@
     </header>
 
     <div class="forms">
-
-        <!-- Wallet -->
         <div class="card">
             <h2>Wallet Analysis</h2>
-
             <form id="walletForm">
                 <label for="walletId">Wallet ID</label>
-
-                <input
-                    id="walletId"
-                    type="text"
-                    placeholder="0x..."
-                    autocomplete="off"
-                    required
-                >
-
-                <button type="submit" id="walletButton">
-                    Analyze Wallet
-                </button>
+                <input id="walletId" type="text" placeholder="0x..." autocomplete="off" required>
+                <button class="submit-button" type="submit" id="walletButton">Analyze Wallet</button>
             </form>
         </div>
 
-        <!-- Contract -->
         <div class="card">
             <h2>Contract Analysis</h2>
-
             <form id="contractForm">
                 <label for="contractId">Contract ID</label>
-
-                <input
-                    id="contractId"
-                    type="text"
-                    placeholder="0x..."
-                    autocomplete="off"
-                    required
-                >
-
-                <button type="submit" id="contractButton">
-                    Analyze Contract
-                </button>
+                <input id="contractId" type="text" placeholder="0x..." autocomplete="off" required>
+                <button class="submit-button" type="submit" id="contractButton">Analyze Contract</button>
             </form>
         </div>
-
     </div>
 
-    <!-- Response -->
-    <div class="response-card">
-        <div class="response-header">
-            <span class="response-title">Response</span>
-            <span class="status" id="status">Waiting for request</span>
+    <div class="card" style="margin-bottom: 22px;">
+        <h2>MetaMask Snap</h2>
+        <p class="subtitle">Install the Snap to see these results inside MetaMask before confirming a transaction.</p>
+        <button class="submit-button" type="button" id="snapButton">Install Snap</button>
+        <div class="status" id="snapStatus">Needs MetaMask Flask and the snap dev server on :8080.</div>
+    </div>
+
+    <!-- Wallet / Contract results are kept independently so switching tabs
+         does not discard the other response. -->
+    <div class="results-card">
+        <div class="tabs">
+            <button class="tab active" data-tab="wallet">Wallet</button>
+            <button class="tab" data-tab="contract">Contract</button>
         </div>
 
-        <pre id="response">{
-  "message": "Submit a wallet or contract address to begin."
-}</pre>
+        <section class="result-panel active" id="walletPanel">
+            <div class="panel-header">
+                <span class="panel-title">Wallet Result</span>
+                <span class="status" id="walletStatus">No request yet</span>
+            </div>
+
+            <div class="view-toggle" style="padding: 10px 18px 0;">
+                <button class="small-button active" data-view="structured" data-target="wallet">Structured</button>
+                <button class="small-button" data-view="raw" data-target="wallet">Raw JSON</button>
+            </div>
+
+            <div id="walletStructured" class="table-wrap">
+                <div class="empty">Submit a wallet address to view the result.</div>
+            </div>
+
+            <pre id="walletRaw" class="raw-json" style="display:none;">{}</pre>
+        </section>
+
+        <section class="result-panel" id="contractPanel">
+            <div class="panel-header">
+                <span class="panel-title">Contract Result</span>
+                <span class="status" id="contractStatus">No request yet</span>
+            </div>
+
+            <div class="view-toggle" style="padding: 10px 18px 0;">
+                <button class="small-button active" data-view="structured" data-target="contract">Structured</button>
+                <button class="small-button" data-view="raw" data-target="contract">Raw JSON</button>
+            </div>
+
+            <div id="contractStructured" class="table-wrap">
+                <div class="empty">Submit a contract address to view the result.</div>
+            </div>
+
+            <pre id="contractRaw" class="raw-json" style="display:none;">{}</pre>
+        </section>
+    </div>
+
+    <!-- Transactions are populated from wallet.recent_transactions. -->
+    <div class="transactions-card">
+        <div class="transactions-header">
+            <div>
+                <div class="transaction-title">Recent Transactions</div>
+                <div class="status" id="transactionStatus">Run a wallet analysis to load transactions.</div>
+            </div>
+            <span class="transaction-page" id="transactionPage"></span>
+        </div>
+
+        <div id="transactionsList">
+            <div class="empty">No wallet transactions available.</div>
+        </div>
+
+        <div class="pagination">
+            <button class="arrow" id="prevTransaction" aria-label="Previous transactions" disabled>‹</button>
+            <button class="arrow" id="nextTransaction" aria-label="Next transactions" disabled>›</button>
+        </div>
     </div>
 
 </div>
 
-
 <script>
-    // Change this if the FastAPI server runs somewhere else.
     const API_BASE = "http://127.0.0.1:8000";
+    const TRANSACTIONS_PER_PAGE = 3;
 
-
-    const responseBox = document.getElementById("response");
-    const statusText = document.getElementById("status");
+    const state = {
+        wallet: null,
+        contract: null,
+        transactions: [],
+        transactionPage: 0
+    };
 
     const walletForm = document.getElementById("walletForm");
     const contractForm = document.getElementById("contractForm");
-
     const walletButton = document.getElementById("walletButton");
     const contractButton = document.getElementById("contractButton");
 
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function formatValue(value) {
+        if (value === null) return "null";
+        if (value === undefined) return "undefined";
+
+        if (typeof value === "object") {
+            return JSON.stringify(value, null, 2);
+        }
+
+        return String(value);
+    }
+
+    function renderParameterTable(data) {
+        if (!data || typeof data !== "object") {
+            return '<div class="empty">No structured response available.</div>';
+        }
+
+        const rows = [];
+
+        function addRows(value, prefix = "") {
+            Object.entries(value).forEach(([key, item]) => {
+                const name = prefix ? `${prefix}.${key}` : key;
+
+                if (
+                    item &&
+                    typeof item === "object" &&
+                    !Array.isArray(item)
+                ) {
+                    addRows(item, name);
+                } else {
+                    rows.push(`
+                        <tr>
+                            <td class="param-name">${escapeHtml(name)}</td>
+                            <td class="param-value">${escapeHtml(formatValue(item))}</td>
+                        </tr>
+                    `);
+                }
+            });
+        }
+
+        addRows(data);
+
+        if (!rows.length) {
+            return '<div class="empty">Response contains no parameters.</div>';
+        }
+
+        return `
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.join("")}
+                </tbody>
+            </table>
+        `;
+    }
+
+    function setResult(type, data) {
+        state[type] = data;
+
+        document.getElementById(`${type}Structured`).innerHTML =
+            renderParameterTable(data);
+
+        document.getElementById(`${type}Raw`).textContent =
+            JSON.stringify(data, null, 2);
+    }
+
+    function setError(type, error) {
+        document.getElementById(`${type}Structured`).innerHTML = `
+            <div class="empty">${escapeHtml(error)}</div>
+        `;
+
+        document.getElementById(`${type}Raw`).textContent =
+            JSON.stringify({ error }, null, 2);
+    }
+
+    function formatTimestamp(timestamp) {
+        if (timestamp === null || timestamp === undefined || timestamp === "") {
+            return "—";
+        }
+
+        const number = Number(timestamp);
+
+        if (!Number.isNaN(number)) {
+            const date = new Date(number < 10000000000 ? number * 1000 : number);
+            if (!Number.isNaN(date.getTime())) {
+                return date.toLocaleString();
+            }
+        }
+
+        return String(timestamp);
+    }
+
+    function renderTransactions() {
+        const list = document.getElementById("transactionsList");
+        const pageLabel = document.getElementById("transactionPage");
+        const prev = document.getElementById("prevTransaction");
+        const next = document.getElementById("nextTransaction");
+
+        const transactions = state.transactions;
+
+        if (!transactions.length) {
+            list.innerHTML = '<div class="empty">No recent transactions returned.</div>';
+            pageLabel.textContent = "";
+            prev.disabled = true;
+            next.disabled = true;
+            return;
+        }
+
+        const totalPages = Math.ceil(transactions.length / TRANSACTIONS_PER_PAGE);
+
+        if (state.transactionPage >= totalPages) {
+            state.transactionPage = totalPages - 1;
+        }
+
+        const start = state.transactionPage * TRANSACTIONS_PER_PAGE;
+        const pageItems = transactions.slice(
+            start,
+            start + TRANSACTIONS_PER_PAGE
+        );
+
+        list.innerHTML = pageItems.map((tx, index) => `
+            <article class="transaction">
+                <div class="transaction-top">
+                    <span class="transaction-number">
+                        Transaction ${start + index + 1}
+                    </span>
+                    <span class="transaction-type">
+                        ${escapeHtml(tx.transaction_type ?? "Unknown")}
+                    </span>
+                </div>
+
+                <div class="transaction-grid">
+                    <div class="transaction-field">
+                        <span class="transaction-label">Hash</span>
+                        <span class="transaction-value">${escapeHtml(tx.hash ?? "—")}</span>
+                    </div>
+
+                    <div class="transaction-field">
+                        <span class="transaction-label">Timestamp</span>
+                        <span class="transaction-value">${escapeHtml(formatTimestamp(tx.timestamp))}</span>
+                    </div>
+
+                    <div class="transaction-field">
+                        <span class="transaction-label">Counterparty</span>
+                        <span class="transaction-value">${escapeHtml(tx.counterparty ?? "—")}</span>
+                    </div>
+
+                    <div class="transaction-field">
+                        <span class="transaction-label">Counterparty Age</span>
+                        <span class="transaction-value">${escapeHtml(tx.counterparty_age_days ?? "—")} days</span>
+                    </div>
+
+                    <div class="transaction-field">
+                        <span class="transaction-label">Counterparty New</span>
+                        <span class="transaction-value">${escapeHtml(tx.counterparty_is_new ?? "—")}</span>
+                    </div>
+
+                    <div class="transaction-field">
+                        <span class="transaction-label">Unlimited Approval</span>
+                        <span class="transaction-value">${escapeHtml(tx.approval_is_unlimited ?? "—")}</span>
+                    </div>
+                </div>
+            </article>
+        `).join("");
+
+        pageLabel.textContent = `${state.transactionPage + 1} / ${totalPages}`;
+        prev.disabled = state.transactionPage === 0;
+        next.disabled = state.transactionPage >= totalPages - 1;
+    }
 
     async function analyze(type, address, button) {
         button.disabled = true;
 
-        statusText.textContent = "Loading...";
-        responseBox.textContent = "Fetching response...";
+        const status = document.getElementById(`${type}Status`);
+        status.textContent = "Loading...";
+
+        const endpoint =
+            `${API_BASE}/analyze/${type}/${encodeURIComponent(address.trim())}`;
 
         try {
-            const endpoint =
-                `${API_BASE}/analyze/${type}/${encodeURIComponent(address.trim())}`;
-
-            const response = await fetch(endpoint);
+            const response = await fetch(endpoint, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
 
             const data = await response.json();
 
-            responseBox.textContent = JSON.stringify(data, null, 2);
-
             if (!response.ok) {
-                statusText.textContent = `Error ${response.status}`;
+                const message =
+                    data?.detail
+                    ? (typeof data.detail === "string"
+                        ? data.detail
+                        : JSON.stringify(data.detail))
+                    : `HTTP ${response.status}`;
+
+                setError(type, message);
+                status.textContent = `Error ${response.status}`;
                 return;
             }
 
-            statusText.textContent = "Success";
+            setResult(type, data);
+            status.textContent = "Success";
+
+            if (type === "wallet") {
+                state.transactions = data.recent_transactions || [];
+                state.transactionPage = 0;
+
+                document.getElementById("transactionStatus").textContent =
+                    `${state.transactions.length} transaction${state.transactions.length === 1 ? "" : "s"} returned`;
+
+                renderTransactions();
+            }
 
         } catch (error) {
-            statusText.textContent = "Request failed";
+            console.error("API request failed:", error);
 
-            responseBox.textContent = JSON.stringify(
-                {
-                    error: error.message
-                },
-                null,
-                2
-            );
+            setError(type, error.message);
+            status.textContent = "Network error";
 
+            if (type === "wallet") {
+                state.transactions = [];
+                state.transactionPage = 0;
+                document.getElementById("transactionStatus").textContent =
+                    "Unable to load wallet transactions.";
+                renderTransactions();
+            }
         } finally {
             button.disabled = false;
         }
     }
 
-
-    walletForm.addEventListener("submit", (event) => {
+    walletForm.addEventListener("submit", event => {
         event.preventDefault();
 
-        const address = document.getElementById("walletId").value;
-
+        const address = document.getElementById("walletId").value.trim();
         analyze("wallet", address, walletButton);
     });
 
-
-    contractForm.addEventListener("submit", (event) => {
+    contractForm.addEventListener("submit", event => {
         event.preventDefault();
 
-        const address = document.getElementById("contractId").value;
-
+        const address = document.getElementById("contractId").value.trim();
         analyze("contract", address, contractButton);
+    });
+
+    const snapButton = document.getElementById("snapButton");
+    const snapStatus = document.getElementById("snapStatus");
+
+    snapButton.addEventListener("click", async () => {
+        if (!window.ethereum) {
+            snapStatus.textContent = "MetaMask Flask not detected.";
+            return;
+        }
+
+        snapButton.disabled = true;
+        snapStatus.textContent = "Requesting...";
+
+        try {
+            await window.ethereum.request({
+                method: "wallet_requestSnaps",
+                params: { "local:http://localhost:8080": {} }
+            });
+            snapStatus.textContent = "Installed. Trigger a transaction to see the insight.";
+        } catch (error) {
+            snapStatus.textContent = error?.message || "Install failed.";
+        } finally {
+            snapButton.disabled = false;
+        }
+    });
+
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            const target = tab.dataset.tab;
+
+            document.querySelectorAll(".tab").forEach(item =>
+                item.classList.toggle("active", item === tab)
+            );
+
+            document.querySelectorAll(".result-panel").forEach(panel =>
+                panel.classList.toggle(
+                    "active",
+                    panel.id === `${target}Panel`
+                )
+            );
+        });
+    });
+
+    document.querySelectorAll(".small-button").forEach(button => {
+        button.addEventListener("click", () => {
+            const target = button.dataset.target;
+            const view = button.dataset.view;
+
+            document
+                .querySelectorAll(`.small-button[data-target="${target}"]`)
+                .forEach(item =>
+                    item.classList.toggle("active", item === button)
+                );
+
+            document.getElementById(`${target}Structured`).style.display =
+                view === "structured" ? "block" : "none";
+
+            document.getElementById(`${target}Raw`).style.display =
+                view === "raw" ? "block" : "none";
+        });
+    });
+
+    document.getElementById("prevTransaction").addEventListener("click", () => {
+        if (state.transactionPage > 0) {
+            state.transactionPage--;
+            renderTransactions();
+        }
+    });
+
+    document.getElementById("nextTransaction").addEventListener("click", () => {
+        const totalPages =
+            Math.ceil(state.transactions.length / TRANSACTIONS_PER_PAGE);
+
+        if (state.transactionPage < totalPages - 1) {
+            state.transactionPage++;
+            renderTransactions();
+        }
     });
 </script>
 
