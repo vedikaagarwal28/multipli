@@ -1,0 +1,5 @@
+.venv/
+data/
+*:Zone.Identifier
+__pycache__/
+model/candidate/

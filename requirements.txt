@@ -1,0 +1,8 @@
+lightgbm
+scikit-learn
+pandas
+pyarrow
+duckdb
+zstandard
+psycopg[binary]
+pgserver  # tests only: embedded Postgres
