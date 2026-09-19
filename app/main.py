@@ -19,7 +19,9 @@ from app.config import settings
 from app.features import contract as contract_features
 from app.features import wallet as wallet_features
 from app.features.normalize import build_tx_frame
-from app.models import ContractAnalysisResponse, WalletAnalysisResponse
+from app.models import ContractAnalysisResponse, Verdict, WalletAnalysisResponse
+from app.risk import load_flagged, to_model_features
+from risk_model import RiskModel
 
 state: dict = {}
 
@@ -35,6 +37,8 @@ async def lifespan(app: FastAPI):
     state["rpc"] = RpcClient(state["etherscan"], rpc_url=settings.rpc_url)
     state["fourbyte"] = FourByteClient()
     state["cache"] = TTLCache(ttl_seconds=settings.cache_ttl_seconds)
+    state["risk_model"] = RiskModel()
+    state["flagged"] = load_flagged(settings.flagged_addresses_path)
 
     yield
 
@@ -100,7 +104,10 @@ async def analyze_wallet(address: str):
     )
     flags = await wallet_features.build_transaction_flags(records, address, etherscan)
 
-    response = WalletAnalysisResponse(features=features, recent_transactions=flags)
+    inputs = to_model_features(features, records, state["flagged"])
+    verdict = Verdict(**state["risk_model"].score(inputs), inputs=inputs)
+
+    response = WalletAnalysisResponse(features=features, recent_transactions=flags, verdict=verdict)
     cache.set(f"wallet:{address}", response)
     return response
 

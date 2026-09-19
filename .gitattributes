@@ -1,0 +1,6 @@
+# LightGBM parses its model file line by line and rejects CRLF, so this must
+# never be line-ending converted on a Windows checkout.
+model/risk_lgbm.txt -text
+model/risk_model.json -text
+
+* text=auto eol=lf

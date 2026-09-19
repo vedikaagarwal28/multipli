@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 fastapi==0.116.0
 uvicorn[standard]==0.30.6
 httpx==0.27.2
@@ -7,13 +6,15 @@ pydantic-settings>=2.11
 python-dotenv==1.0.1
 pytest==8.3.3
 pytest-asyncio==0.24.0
-=======
+
+# scoring: risk_model.py, decision_engine.py
 lightgbm
 scikit-learn
 pandas
 pyarrow
+psycopg[binary]
+
+# retraining + demo only
 duckdb
 zstandard
-psycopg[binary]
-pgserver  # tests only: embedded Postgres
->>>>>>> origin/ml-scoring-classifier
+pgserver

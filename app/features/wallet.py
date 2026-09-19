@@ -155,6 +155,25 @@ async def new_counterparty_ratio(
     return new_count / len(known)
 
 
+def flagged_counterparty_share(
+    records: list[TxRecord],
+    address: str,
+    flagged: set[str],
+    now: Optional[float] = None,
+) -> Optional[float]:
+    """#7 — share of the last 30 days' transfers whose counterparty is a known
+    scam/sanctioned address. Denominator is every transfer in the same window,
+    matching how train.py builds this from the labelled pair counts."""
+    now = now or time.time()
+    window_start = now - 30 * SECONDS_PER_DAY
+    window = [r for r in records if r.timestamp >= window_start]
+    if not window:
+        return None
+
+    hits = sum(1 for r in window if (_counterparty_of(r, address) or "") in flagged)
+    return hits / len(window)
+
+
 def first_funder(records: list[TxRecord], address: str) -> Optional[str]:
     address = address.lower()
     inbound = [r for r in records if r.to_address == address and r.value_wei > 0]

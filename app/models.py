@@ -71,9 +71,29 @@ class ContractFeatures(BaseModel):
     privileged_functions: list[str] = []
 
 
+class RiskFactor(BaseModel):
+    """One parameter's contribution, as risk_model.py explains it."""
+    parameter: str
+    value: Optional[float] = None
+    impact: float
+    direction: str                                  # raises risk / lowers risk / neutral
+    text: str
+    pct_of_legit_at_or_below: Optional[int] = None
+    pct_of_scam_at_or_below: Optional[int] = None
+
+
+class Verdict(BaseModel):
+    risk_score: int                 # riskier than X% of legitimate wallets
+    band: str                       # ALLOW / REVIEW (>=90) / BLOCK (>=99)
+    probability: float
+    factors: list[RiskFactor]       # most influential first
+    inputs: dict[str, Optional[float]]   # the nine parameters the model actually saw
+
+
 class WalletAnalysisResponse(BaseModel):
     features: WalletFeatures
     recent_transactions: list[TransactionFlags]
+    verdict: Verdict
     model_config = {"protected_namespaces": ()}
 
 

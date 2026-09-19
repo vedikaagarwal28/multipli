@@ -29,5 +29,9 @@ class Settings(BaseSettings):
 
     cache_ttl_seconds: int = 600
 
+    # Known scam/sanctioned addresses, one per line. Feeds parameters #7 and #8,
+    # which stay unknown while the file is absent. See app/risk.py.
+    flagged_addresses_path: str = "data/flagged_addresses.txt"
+
 
 settings = Settings()

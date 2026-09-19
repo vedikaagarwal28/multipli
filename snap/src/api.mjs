@@ -11,7 +11,8 @@ export async function analyze(address) {
     const body = await response.json().catch(() => ({}));
 
     if (response.ok) {
-      return { kind, features: body.features };
+      // verdict is wallet-only: contracts have no model yet.
+      return { kind, features: body.features, verdict: body.verdict };
     }
     detail = body.detail ?? `HTTP ${response.status}`;
   }

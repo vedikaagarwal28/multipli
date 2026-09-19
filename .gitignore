@@ -6,3 +6,7 @@ venv/
 .venv/
 node_modules/
 snap/dist/
+
+# training downloads (~4.6 GB); the flagged list is small and tracked
+data/
+!data/flagged_addresses.txt
