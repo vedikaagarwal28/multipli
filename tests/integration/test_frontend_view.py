@@ -11,7 +11,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from tests.integration.conftest import ESTABLISHED, SUSPICIOUS
+from tests.integration.conftest import CONTRACT, ESTABLISHED, UNKNOWN, SUSPICIOUS
 
 HARNESS = Path(__file__).parent / "frontend_harness.mjs"
 PAGE = Path(__file__).resolve().parents[2] / "frontend" / "base.html"
@@ -64,3 +64,37 @@ def test_a_risky_verdict_renders_its_band(node, api_url):
     r.raise_for_status()
     body = r.json()
     assert body["verdict"]["band"] in render(node, body)
+
+
+def route(node, api_url, address):
+    """The page's own analyzeAddress() against the live API -> the tab it picked
+    and the endpoints it called on the way."""
+    done = subprocess.run(
+        [node, str(HARNESS), str(PAGE), api_url, address],
+        capture_output=True, text=True, timeout=180,
+    )
+    assert done.returncode == 0, f"frontend harness failed:\n{done.stderr}"
+    return json.loads(done.stdout)
+
+
+def test_page_routes_an_eoa_to_the_wallet_tab(node, api_url):
+    """ESTABLISHED reports EIP-7702 delegation code, so /contract has to 400
+    before the page falls through — the single input can't ask the user."""
+    routed = route(node, api_url, ESTABLISHED)
+    assert routed["tab"] == "wallet"
+    assert routed["calls"] == [
+        {"endpoint": "contract", "status": 400},
+        {"endpoint": "wallet", "status": 200},
+    ]
+
+
+def test_page_stops_at_the_contract_endpoint_for_a_contract(node, api_url):
+    routed = route(node, api_url, CONTRACT)
+    assert routed["tab"] == "contract"
+    assert routed["calls"] == [{"endpoint": "contract", "status": 200}]
+
+
+def test_page_lands_on_the_wallet_tab_when_neither_endpoint_answers(node, api_url):
+    routed = route(node, api_url, UNKNOWN)
+    assert routed["tab"] == "wallet"
+    assert [c["status"] for c in routed["calls"]] == [400, 404]

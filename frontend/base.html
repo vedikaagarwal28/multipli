@@ -364,20 +364,14 @@
 
     <div class="forms">
         <div class="card">
-            <h2>Wallet Analysis</h2>
-            <form id="walletForm">
-                <label for="walletId">Wallet ID</label>
-                <input id="walletId" type="text" placeholder="0x..." autocomplete="off" required>
-                <button class="submit-button" type="submit" id="walletButton">Analyze Wallet</button>
-            </form>
-        </div>
-
-        <div class="card">
-            <h2>Contract Analysis</h2>
-            <form id="contractForm">
-                <label for="contractId">Contract ID</label>
-                <input id="contractId" type="text" placeholder="0x..." autocomplete="off" required>
-                <button class="submit-button" type="submit" id="contractButton">Analyze Contract</button>
+            <h2>Address Analysis</h2>
+            <!-- One input: the API decides wallet vs contract, the same way the
+                 snap does (eth_getCode on the backend, 400 = EOA). Asking the
+                 user to declare which it is gets it wrong for EIP-7702. -->
+            <form id="addressForm">
+                <label for="addressInput">Wallet or contract address</label>
+                <input id="addressInput" type="text" placeholder="0x..." autocomplete="off" required>
+                <button class="submit-button" type="submit" id="analyzeButton">Analyze</button>
             </form>
         </div>
     </div>
@@ -467,10 +461,8 @@
         transactionPage: 0
     };
 
-    const walletForm = document.getElementById("walletForm");
-    const contractForm = document.getElementById("contractForm");
-    const walletButton = document.getElementById("walletButton");
-    const contractButton = document.getElementById("contractButton");
+    const addressForm = document.getElementById("addressForm");
+    const analyzeButton = document.getElementById("analyzeButton");
 
     function escapeHtml(value) {
         return String(value)
@@ -655,6 +647,8 @@
         next.disabled = state.transactionPage >= totalPages - 1;
     }
 
+    // -> true if this endpoint answered, so analyzeAddress knows whether to
+    // fall through to the next one.
     async function analyze(type, address, button) {
         button.disabled = true;
 
@@ -684,7 +678,7 @@
 
                 setError(type, message);
                 status.textContent = `Error ${response.status}`;
-                return;
+                return false;
             }
 
             setResult(type, data);
@@ -700,6 +694,8 @@
                 renderTransactions();
             }
 
+            return true;
+
         } catch (error) {
             console.error("API request failed:", error);
 
@@ -713,23 +709,30 @@
                     "Unable to load wallet transactions.";
                 renderTransactions();
             }
+
+            return false;
         } finally {
             button.disabled = false;
         }
     }
 
-    walletForm.addEventListener("submit", event => {
+    // Ask /contract first and read its 400 as "this is an EOA, try /wallet" —
+    // the same routing snap/src/api.mjs uses, so both surfaces agree.
+    async function analyzeAddress(address) {
+        for (const type of ["contract", "wallet"]) {
+            if (await analyze(type, address, analyzeButton)) {
+                showTab(type);
+                return;
+            }
+        }
+        // Neither answered: wallet's message ("no on-chain history") is the
+        // useful one, the contract 400 is just the routing step.
+        showTab("wallet");
+    }
+
+    addressForm.addEventListener("submit", event => {
         event.preventDefault();
-
-        const address = document.getElementById("walletId").value.trim();
-        analyze("wallet", address, walletButton);
-    });
-
-    contractForm.addEventListener("submit", event => {
-        event.preventDefault();
-
-        const address = document.getElementById("contractId").value.trim();
-        analyze("contract", address, contractButton);
+        analyzeAddress(document.getElementById("addressInput").value.trim());
     });
 
     const snapButton = document.getElementById("snapButton");
@@ -757,20 +760,19 @@
         }
     });
 
+    function showTab(target) {
+        document.querySelectorAll(".tab").forEach(item =>
+            item.classList.toggle("active", item.dataset.tab === target)
+        );
+
+        document.querySelectorAll(".result-panel").forEach(panel =>
+            panel.classList.toggle("active", panel.id === `${target}Panel`)
+        );
+    }
+
     document.querySelectorAll(".tab").forEach(tab => {
         tab.addEventListener("click", () => {
-            const target = tab.dataset.tab;
-
-            document.querySelectorAll(".tab").forEach(item =>
-                item.classList.toggle("active", item === tab)
-            );
-
-            document.querySelectorAll(".result-panel").forEach(panel =>
-                panel.classList.toggle(
-                    "active",
-                    panel.id === `${target}Panel`
-                )
-            );
+            showTab(tab.dataset.tab);
         });
     });
 
