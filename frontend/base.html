@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Risk Analyzer</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #0b0d0f;
+            color: #e7e9ea;
+            font-family: "Noto Sans", sans-serif;
+        }
+
+        .container {
+            width: min(900px, 92%);
+            margin: 0 auto;
+            padding: 70px 0;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #858b91;
+            font-size: 14px;
+        }
+
+        .forms {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: #111417;
+            border: 1px solid #24282c;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 16px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #90969c;
+            font-size: 12px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #2b3035;
+            border-radius: 7px;
+            outline: none;
+            background: #0c0f11;
+            color: #e7e9ea;
+            font-family: "Noto Sans", sans-serif;
+            font-size: 13px;
+            transition: border-color 0.15s;
+        }
+
+        input:focus {
+            border-color: #666d74;
+        }
+
+        input::placeholder {
+            color: #555b61;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 12px;
+            padding: 10px 14px;
+            border: 1px solid #343a40;
+            border-radius: 7px;
+            background: #e7e9ea;
+            color: #0b0d0f;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .response-card {
+            background: #111417;
+            border: 1px solid #24282c;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid #24282c;
+        }
+
+        .response-title {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status {
+            color: #737a81;
+            font-size: 11px;
+        }
+
+        pre {
+            height: 360px;
+            margin: 0;
+            padding: 18px;
+            overflow: auto;
+            background: #0c0f11;
+            color: #b9c0c7;
+            font-family: "Noto Sans", monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @media (max-width: 700px) {
+            .forms {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 40px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Risk Analyzer</h1>
+        <p class="subtitle">Analyze wallet and smart contract activity.</p>
+    </header>
+
+    <div class="forms">
+
+        <!-- Wallet -->
+        <div class="card">
+            <h2>Wallet Analysis</h2>
+
+            <form id="walletForm">
+                <label for="walletId">Wallet ID</label>
+
+                <input
+                    id="walletId"
+                    type="text"
+                    placeholder="0x..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button type="submit" id="walletButton">
+                    Analyze Wallet
+                </button>
+            </form>
+        </div>
+
+        <!-- Contract -->
+        <div class="card">
+            <h2>Contract Analysis</h2>
+
+            <form id="contractForm">
+                <label for="contractId">Contract ID</label>
+
+                <input
+                    id="contractId"
+                    type="text"
+                    placeholder="0x..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button type="submit" id="contractButton">
+                    Analyze Contract
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Response -->
+    <div class="response-card">
+        <div class="response-header">
+            <span class="response-title">Response</span>
+            <span class="status" id="status">Waiting for request</span>
+        </div>
+
+        <pre id="response">{
+  "message": "Submit a wallet or contract address to begin."
+}</pre>
+    </div>
+
+</div>
+
+
+<script>
+    // Change this if the FastAPI server runs somewhere else.
+    const API_BASE = "http://127.0.0.1:8000";
+
+
+    const responseBox = document.getElementById("response");
+    const statusText = document.getElementById("status");
+
+    const walletForm = document.getElementById("walletForm");
+    const contractForm = document.getElementById("contractForm");
+
+    const walletButton = document.getElementById("walletButton");
+    const contractButton = document.getElementById("contractButton");
+
+
+    async function analyze(type, address, button) {
+        button.disabled = true;
+
+        statusText.textContent = "Loading...";
+        responseBox.textContent = "Fetching response...";
+
+        try {
+            const endpoint =
+                `${API_BASE}/analyze/${type}/${encodeURIComponent(address.trim())}`;
+
+            const response = await fetch(endpoint);
+
+            const data = await response.json();
+
+            responseBox.textContent = JSON.stringify(data, null, 2);
+
+            if (!response.ok) {
+                statusText.textContent = `Error ${response.status}`;
+                return;
+            }
+
+            statusText.textContent = "Success";
+
+        } catch (error) {
+            statusText.textContent = "Request failed";
+
+            responseBox.textContent = JSON.stringify(
+                {
+                    error: error.message
+                },
+                null,
+                2
+            );
+
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+
+    walletForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const address = document.getElementById("walletId").value;
+
+        analyze("wallet", address, walletButton);
+    });
+
+
+    contractForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const address = document.getElementById("contractId").value;
+
+        analyze("contract", address, contractButton);
+    });
+</script>
+
+</body>
+</html>
