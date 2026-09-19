@@ -18,6 +18,7 @@ from app.clients.rpc import RpcClient
 from app.config import settings
 from app.features import contract as contract_features
 from app.features import wallet as wallet_features
+from app.features.bytecode import is_eoa_code
 from app.features.normalize import build_tx_frame
 from app.models import ContractAnalysisResponse, Verdict, WalletAnalysisResponse
 from app.risk import load_flagged, to_model_features
@@ -124,7 +125,7 @@ async def analyze_contract(address: str):
         return cached
 
     code = await state["etherscan"].proxy_get_code(address)
-    if code in (None, "0x", "0x0"):
+    if code is None or is_eoa_code(code):
         raise HTTPException(400, detail="address has no code — this is an EOA, use /analyze/wallet instead")
 
     features = await contract_features.compute_contract_features(

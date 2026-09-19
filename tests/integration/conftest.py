@@ -77,7 +77,14 @@ class FakeEtherscan:
         return FIRST_SEEN.get(address.lower())
 
     async def proxy_get_code(self, address):
-        return "0x60806040" if address.lower() == CONTRACT else "0x"
+        if address.lower() == CONTRACT:
+            return "0x60806040"
+        if address.lower() == ESTABLISHED:
+            # EIP-7702 delegation: an EOA that reports code. Routed to
+            # /analyze/contract it answers 200 with every feature None and no
+            # verdict, which is what the snap rendered before is_eoa_code.
+            return "0xef0100" + "c" * 40
+        return "0x"
 
     async def get_source_code(self, address):
         # verified with an ABI, so the privileged-function scan reads names from the

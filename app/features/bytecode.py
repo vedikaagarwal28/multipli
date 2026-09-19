@@ -19,6 +19,19 @@ from typing import Iterable
 PUSH4 = 0x63
 EQ = 0x14
 
+# EIP-7702: a delegated EOA's code is `0xef0100 || <20-byte address>`.
+# It is still an EOA — no creation tx, no source, no owner — so routing
+# one to the contract path returns every feature as None and no verdict.
+# EIP-3541 bans deploying any code beginning with 0xEF, so this prefix
+# can only ever be a delegation indicator, never real contract code.
+DELEGATION_PREFIX = "0xef0100"
+
+
+def is_eoa_code(code: str) -> bool:
+    """An eth_getCode result -> is this an externally-owned account?"""
+    code = code.strip().lower()
+    return code in ("", "0x", "0x0") or code.startswith(DELEGATION_PREFIX)
+
 # Matched against 4byte.directory's resolved text signature, or
 # directly against a verified ABI's function name. Deliberately
 # name-based rather than a hardcoded selector table — there's no

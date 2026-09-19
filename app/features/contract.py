@@ -17,7 +17,11 @@ from typing import Optional
 from app.clients.etherscan import EtherscanClient
 from app.clients.fourbyte import FourByteClient
 from app.clients.rpc import RpcClient
-from app.features.bytecode import classify_privileged_from_names, extract_push4_selectors
+from app.features.bytecode import (
+    classify_privileged_from_names,
+    extract_push4_selectors,
+    is_eoa_code,
+)
 from app.models import ContractFeatures
 
 # EIP-1967 standard storage slots — bytes32(uint256(keccak256(<slot name>)) - 1)
@@ -69,7 +73,7 @@ async def owner_is_eoa(rpc: RpcClient, owner_address: Optional[str]) -> Optional
     code = await rpc.eth_get_code(owner_address)
     if code is None:
         return None
-    return code in ("0x", "0x0", "")
+    return is_eoa_code(code)
 
 
 async def privileged_function_count(
