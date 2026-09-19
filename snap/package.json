@@ -1,0 +1,22 @@
+{
+  "name": "multipli-snap",
+  "version": "0.1.0",
+  "description": "Counterparty risk insight for MetaMask transactions.",
+  "main": "src/index.jsx",
+  "files": [
+    "dist",
+    "snap.manifest.json"
+  ],
+  "scripts": {
+    "build": "mm-snap build",
+    "test": "node test.mjs",
+    "start": "mm-snap watch",
+    "serve": "mm-snap serve"
+  },
+  "dependencies": {
+    "@metamask/snaps-sdk": "^10.4.0"
+  },
+  "devDependencies": {
+    "@metamask/snaps-cli": "^8.4.1"
+  }
+}

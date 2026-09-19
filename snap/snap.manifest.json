@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "description": "Shows Multipli risk features for the counterparty before you confirm a transaction.",
+  "proposedName": "Multipli Risk Insight",
+  "source": {
+    "shasum": "HGptWt7NESBFp8L5Vx7Z54wI9oqUtusNXAVTmf5fHyk=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "packageName": "multipli-snap",
+        "registry": "https://registry.npmjs.org"
+      }
+    }
+  },
+  "initialPermissions": {
+    "endowment:transaction-insight": {},
+    "endowment:network-access": {}
+  },
+  "platformVersion": "10.4.0",
+  "manifestVersion": "0.1"
+}

@@ -44,8 +44,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Wallet/Contract Risk Feature API", lifespan=lifespan)
-app.add_middleware( CORSMiddleware, allow_origins=["http://localhost:3000/frontend/base.html", "http://localhost:8000/"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"], )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        # Snaps run in a sandboxed iframe, so their fetch carries Origin: null.
+        "null",
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 def _validate_address(address: str) -> str:
     address = address.strip().lower()
