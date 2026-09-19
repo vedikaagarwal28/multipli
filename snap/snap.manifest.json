@@ -3,7 +3,7 @@
   "description": "Shows Multipli risk features for the counterparty before you confirm a transaction.",
   "proposedName": "Multipli Risk Insight",
   "source": {
-    "shasum": "ozQFjK9CbfJC5s+Wys/0Ujl6YYU2KxmM3PzsQloBahs=",
+    "shasum": "d2a4eIxWOOs0luN5nLk0N0I5Gqb3ViGKbT3TYAlUTx0=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

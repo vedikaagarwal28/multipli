@@ -95,10 +95,34 @@ callable expects, so wiring it up is an endpoint and a sync wrapper, not a rewri
 
 ```bash
 uv venv && uv pip install -r requirements.txt     # or: pip install -r requirements.txt
-pytest tests/                                     # API, feature layer, model bridge
+pytest tests/                                     # unit + integration (needs node on PATH)
 python test_decision_engine.py                    # engine end-to-end on an embedded Postgres
 python demo.py                                    # real dataset wallets through all 3 layers + Postgres rows
 ```
+
+### Tests
+
+| Path | Covers |
+|---|---|
+| `tests/test_features.py` | the Etherscan-derived parameters, on synthetic `TxRecord` fixtures |
+| `tests/test_risk.py` | the feature-layer → model mapping in `app/risk.py` |
+| `tests/integration/` | the whole chain: snap → API → model → API → page |
+| `snap/test.mjs` | the snap's routing and formatting, with `fetch` stubbed (`npm test`) |
+
+`tests/integration/` starts a real uvicorn server on an ephemeral port and fakes
+**only** the Etherscan and RPC clients — the feature layer, `app/risk.py` and LightGBM
+all run for real on every request. The other two hops run their own shipped code rather
+than a copy of it:
+
+- `test_snap_to_api.py` imports `snap/src/api.mjs` through `snap_harness.mjs`, so the
+  snap's real contract-then-wallet routing is what gets exercised.
+- `test_frontend_view.py` evaluates `frontend/base.html`'s own inline script in
+  `node:vm` behind a stub DOM and renders a live API response through the page's real
+  `renderParameterTable`.
+
+Both need `node` on PATH; they skip rather than fail without it. `analyze()` in the snap
+takes its base URL as a defaulted second argument purely so the test can point it at the
+ephemeral port — `index.jsx` calls it unchanged.
 
 Run the live path, three terminals:
 
