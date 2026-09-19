@@ -492,7 +492,7 @@
         return String(value);
     }
 
-    function renderParameterTable(data) {
+    function renderParameterTable(data, excludedKeys = []) {
         if (!data || typeof data !== "object") {
             return '<div class="empty">No structured response available.</div>';
         }
@@ -501,6 +501,10 @@
 
         function addRows(value, prefix = "") {
             Object.entries(value).forEach(([key, item]) => {
+                if (!prefix && excludedKeys.includes(key)) {
+                    return;
+                }
+
                 const name = prefix ? `${prefix}.${key}` : key;
 
                 if (
@@ -545,7 +549,10 @@
         state[type] = data;
 
         document.getElementById(`${type}Structured`).innerHTML =
-            renderParameterTable(data);
+            renderParameterTable(
+                data,
+                type === "wallet" ? ["recent_transactions"] : []
+            );
 
         document.getElementById(`${type}Raw`).textContent =
             JSON.stringify(data, null, 2);
